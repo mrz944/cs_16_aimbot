@@ -293,6 +293,10 @@ class Aimbot:
             self.consecutive_aims = 0
             
         self.target_lock = best_target
+        
+        # Print debug message when a target is found
+        print(f"Target found: Distance {distance:.1f}, FOV {fov:.1f}°")
+        
         return best_target
     
     def is_visible(self, from_pos, to_pos):
@@ -424,6 +428,9 @@ class Aimbot:
                 
             # Move mouse
             mouse.move(mouse_x, mouse_y, absolute=False)
+            
+            # Print debug message when aim is corrected
+            print(f"Aim corrected: Mouse moved by {mouse_x},{mouse_y} pixels")
         else:
             # Calculate new angles
             new_x = current_angles.x + move_x
@@ -440,20 +447,24 @@ class Aimbot:
             # Write to memory with randomized timing
             if random.random() < 0.5:  # 50% chance to write x first
                 self.memory.write_float(self.view_angles_address, new_angles.x)
+                print(f"Aim corrected: Memory write - Pitch: {new_angles.x:.2f}")
                 
                 # Small delay between writes (0-2ms)
                 if random.random() < 0.3:  # 30% chance for delay
                     time.sleep(random.uniform(0, 0.002))
                     
                 self.memory.write_float(self.view_angles_address + 4, new_angles.y)
+                print(f"Aim corrected: Memory write - Yaw: {new_angles.y:.2f}")
             else:  # Write y first
                 self.memory.write_float(self.view_angles_address + 4, new_angles.y)
+                print(f"Aim corrected: Memory write - Yaw: {new_angles.y:.2f}")
                 
                 # Small delay between writes (0-2ms)
                 if random.random() < 0.3:  # 30% chance for delay
                     time.sleep(random.uniform(0, 0.002))
                     
                 self.memory.write_float(self.view_angles_address, new_angles.x)
+                print(f"Aim corrected: Memory write - Pitch: {new_angles.x:.2f}")
         
         # Update last aim time
         self.last_aim_time = current_time
