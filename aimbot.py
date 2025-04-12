@@ -1,3 +1,4 @@
+
 # aimbot.py - Core aimbot logic with anti-detection measures
 from vector import Vector3, calculate_angle, normalize_angles, calc_fov, angle_to_vector
 from offsets import Offsets
@@ -19,22 +20,22 @@ class HumanizedAim:
         self.aim_delay = 0
         self.micro_movements = []
         
-    def generate_bezier_curve(self, start_x, start_y, end_x, end_y, control_points=2):
-        """Generate a Bezier curve for mouse movement"""
+    def generate_bezier_curve(self, start_x, start_y, end_x, end_y, control_points=1):
+        """Generate a more direct Bezier curve for mouse movement"""
         # Start and end points
         points = [(start_x, start_y), (end_x, end_y)]
         
-        # Generate random control points between start and end
+        # Generate fewer control points with minimal deviation for more direct movement
         for _ in range(control_points):
-            # Random point along the path with some deviation
-            t = random.uniform(0.3, 0.7)  # Position along the path
+            # Random point along the path with minimal deviation
+            t = random.uniform(0.4, 0.6)  # Position closer to middle of path
             
             # Linear interpolation between start and end
             x = start_x + t * (end_x - start_x)
             y = start_y + t * (end_y - start_y)
             
-            # Add some random deviation
-            deviation = random.uniform(0.1, 0.3) * max(abs(end_x - start_x), abs(end_y - start_y))
+            # Add minimal random deviation
+            deviation = random.uniform(0.05, 0.15) * max(abs(end_x - start_x), abs(end_y - start_y))
             x += random.uniform(-deviation, deviation)
             y += random.uniform(-deviation, deviation)
             
@@ -72,7 +73,7 @@ class HumanizedAim:
             self.micro_movements.append((x_offset, y_offset))
     
     def prepare_aim_movement(self, current_angles, target_angles, smoothing):
-        """Prepare a humanized aim movement from current to target angles"""
+        """Prepare a more direct aim movement from current to target angles"""
         # Reset state
         self.current_point = 0
         
@@ -80,15 +81,16 @@ class HumanizedAim:
         diff_x = target_angles.x - current_angles.x
         diff_y = target_angles.y - current_angles.y
         
-        # Apply smoothing
-        diff_x /= smoothing
-        diff_y /= smoothing
+        # Apply reduced smoothing for more noticeable movement
+        # Multiply by 0.8 to make movement more aggressive
+        diff_x /= (smoothing * 0.8)
+        diff_y /= (smoothing * 0.8)
         
-        # Generate a Bezier curve for the movement
+        # Generate a more direct Bezier curve for the movement
         self.control_points = self.generate_bezier_curve(
             0, 0,  # Start at origin
             diff_y, diff_x,  # End at the angle difference (swapped for mouse movement)
-            random.randint(1, 3)  # Random number of control points
+            1  # Use only 1 control point for more direct movement
         )
         
         self.total_points = len(self.control_points)
@@ -157,15 +159,14 @@ class Aimbot:
         Offsets.initialize(self.memory)
         
     def get_best_target(self, local_player, players):
-        """Find the best target based on FOV and distance with anti-detection measures"""
+        """Find the best target based on FOV and distance with improved detection"""
         current_time = time.time()
         
-        # Check if we're in a forced break period
-        if current_time < self.forced_break_time:
-            return None
+        # DEBUG: Always reset forced break time to ensure targeting works
+        self.forced_break_time = 0
         
-        # Add randomized target check interval (150-250ms)
-        target_check_interval = random.uniform(0.15, 0.25)
+        # Reduced target check interval (50-100ms) for more responsive targeting
+        target_check_interval = random.uniform(0.05, 0.1)
         
         # Only search for new target if we don't have one or after random interval
         if self.target_lock and current_time - self.last_target_check < target_check_interval:
@@ -179,15 +180,14 @@ class Aimbot:
             # Target no longer valid
             self.target_lock = None
         
-        # If we have a target switch delay, check if it's passed
-        if self.target_switch_delay > current_time:
-            return None
+        # DEBUG: Always reset target switch delay to ensure targeting works
+        self.target_switch_delay = 0
         
         # Find new target
         self.last_target_check = current_time
         
-        # Occasionally update offsets (1% chance per target check)
-        if random.random() < 0.01:
+        # Update offsets more frequently (5% chance per target check)
+        if random.random() < 0.05:
             Offsets.update_offsets()
         
         # Get current view angles
@@ -375,24 +375,24 @@ class Aimbot:
             0
         )
         
-        # Apply dynamic smoothing based on distance and FOV
+        # Apply reduced smoothing for more noticeable aim movement
         base_smoothing = self.config.smoothing
         
         # Calculate distance and FOV
         distance = local_player.eye_position.distance(target_pos)
         fov = calc_fov(current_angles, aim_angle)
         
-        # Adjust smoothing based on distance (further = smoother)
-        distance_factor = min(1.5, max(0.5, distance / 500.0))
+        # Reduce distance factor to make aiming more aggressive at all distances
+        distance_factor = min(1.0, max(0.3, distance / 1000.0))
         
-        # Adjust smoothing based on FOV (larger angle = smoother)
-        fov_factor = min(1.5, max(0.5, fov / 5.0))
+        # Reduce FOV factor to make larger angle movements more aggressive
+        fov_factor = min(1.0, max(0.3, fov / 10.0))
         
-        # Randomize smoothing slightly
-        random_factor = random.uniform(0.85, 1.15)
+        # Reduce random factor variation
+        random_factor = random.uniform(0.9, 1.0)
         
-        # Calculate final smoothing
-        smoothing = base_smoothing * distance_factor * fov_factor * random_factor
+        # Calculate final smoothing with a lower multiplier
+        smoothing = base_smoothing * distance_factor * fov_factor * random_factor * 0.7
         
         # Check if we need to prepare a new aim movement
         if self.humanized_aim.is_movement_complete():
@@ -408,10 +408,14 @@ class Aimbot:
         
         # Apply the movement
         if self.config.use_mouse_movement:
-            # Convert to mouse movement with randomized sensitivity
-            sensitivity_variation = random.uniform(0.9, 1.1)  # 10% variation
-            mouse_x = int(move_y * self.config.mouse_sensitivity * sensitivity_variation)
-            mouse_y = int(move_x * self.config.mouse_sensitivity * sensitivity_variation)
+            # Convert to mouse movement with increased sensitivity for more noticeable movement
+            sensitivity_variation = random.uniform(0.95, 1.05)  # 5% variation
+            
+            # Increase sensitivity by 50% to make movement more noticeable
+            enhanced_sensitivity = self.config.mouse_sensitivity * 1.5
+            
+            mouse_x = int(move_y * enhanced_sensitivity * sensitivity_variation)
+            mouse_y = int(move_x * enhanced_sensitivity * sensitivity_variation)
             
             # Add small random jitter
             if random.random() < 0.2:  # 20% chance to add jitter

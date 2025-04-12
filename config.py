@@ -11,15 +11,15 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 class Config:
     def __init__(self):
-        # Aimbot settings with randomized defaults
-        self.fov_limit = random.uniform(4.5, 5.5)        # Maximum FOV to acquire targets
-        self.smoothing = random.uniform(1.8, 2.2)        # Higher = smoother aim (less snappy)
-        self.use_mouse_movement = random.random() > 0.3  # 70% chance to use mouse movement
-        self.mouse_sensitivity = random.uniform(0.9, 1.1) # Mouse movement sensitivity
-        self.target_bone = "head" if random.random() > 0.3 else "body"  # Target bone
-        self.check_visibility = random.random() > 0.1     # 90% chance to check visibility
-        self.recoil_control = random.random() > 0.1      # 90% chance to use recoil control
-        self.recoil_scale = random.uniform(1.8, 2.2)     # Recoil compensation scale
+        # Aimbot settings with more aggressive defaults
+        self.fov_limit = 10.0                           # Increased FOV to find more targets
+        self.smoothing = 1.2                            # Lower smoothing for more noticeable aim
+        self.use_mouse_movement = True                  # Force mouse movement method
+        self.mouse_sensitivity = 1.5                    # Increased mouse sensitivity
+        self.target_bone = "body"                       # Target body (larger target)
+        self.check_visibility = False                   # Disable visibility checks
+        self.recoil_control = True                      # Enable recoil control
+        self.recoil_scale = 2.0                         # Standard recoil scale
         
         # Anti-detection settings
         self.randomize_aim = True                # Add human-like randomization to aim
