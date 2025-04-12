@@ -147,16 +147,27 @@ def main():
         config = Config()
         memory = None
         
-        # Try to connect to game
+        # Try to connect to game with better error handling
         try:
+            print("Connecting to game process...")
             memory = MemoryManager()
+            print("Game process found successfully.")
         except Exception as e:
-            print("Initialization failed. Please check your setup.")
+            print("Initialization failed. Please make sure Counter-Strike is running.")
+            print("Error details:", str(e))
             input("Press Enter to exit...")
             return
         
-        aimbot = Aimbot(memory, config)
-        aimbot.initialize()
+        try:
+            print("Initializing aimbot...")
+            aimbot = Aimbot(memory, config)
+            aimbot.initialize()
+            print("Aimbot initialized successfully.")
+        except Exception as e:
+            print("Aimbot initialization failed.")
+            print("Error details:", str(e))
+            input("Press Enter to exit...")
+            return
         
         # Use obfuscated initialization messages
         init_messages = [

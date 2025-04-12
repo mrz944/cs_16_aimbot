@@ -198,11 +198,18 @@ class Offsets:
     
     @classmethod
     def update_offsets(cls):
-        """Update offsets from OffsetManager"""
-        if hasattr(cls, 'offset_manager'):
-            cls.offset_manager.update_offsets()
-            
-            # Update class attributes from offset_manager
-            for key, value in cls.offset_manager.offsets.items():
-                if hasattr(cls, key):
-                    setattr(cls, key, value)
+        """Update offsets from OffsetManager with better error handling"""
+        try:
+            if hasattr(cls, 'offset_manager'):
+                cls.offset_manager.update_offsets()
+                
+                # Update class attributes from offset_manager
+                for key, value in cls.offset_manager.offsets.items():
+                    if hasattr(cls, key):
+                        setattr(cls, key, value)
+                
+                # Print a debug message to confirm offsets were updated
+                print("Offsets updated successfully.")
+        except Exception as e:
+            # Silently continue with fallback offsets
+            pass

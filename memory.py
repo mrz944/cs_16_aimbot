@@ -153,22 +153,47 @@ class MemoryManager:
                 print("Setup incomplete. Please verify your environment.")
                 sys.exit(1)
         
-        # Get modules with obfuscated approach
+        # Get modules with obfuscated approach and multiple fallback options
         try:
             # Add random delay before module access
             time.sleep(random.uniform(0.1, 0.3))
             
-            # Get modules with error handling
-            self.client_module = module_from_name(self.process.process_handle, "client.dll").lpBaseOfDll
+            # Try multiple possible client module names
+            client_module_names = ["client.dll", "mp.dll", "cstrike.dll", "valve.dll"]
+            self.client_module = None
+            
+            for client_name in client_module_names:
+                try:
+                    self.client_module = module_from_name(self.process.process_handle, client_name).lpBaseOfDll
+                    break
+                except Exception:
+                    continue
+            
+            if not self.client_module:
+                print("Client module not found. Please verify game installation.")
+                sys.exit(1)
             
             # Add jitter between module accesses
             time.sleep(random.uniform(0.05, 0.15))
             
-            self.engine_module = module_from_name(self.process.process_handle, "hw.dll").lpBaseOfDll
+            # Try multiple possible engine module names
+            engine_module_names = ["hw.dll", "sw.dll", "engine.dll", "hl.dll"]
+            self.engine_module = None
+            
+            for engine_name in engine_module_names:
+                try:
+                    self.engine_module = module_from_name(self.process.process_handle, engine_name).lpBaseOfDll
+                    break
+                except Exception:
+                    continue
+            
+            if not self.engine_module:
+                print("Engine module not found. Please verify game installation.")
+                sys.exit(1)
             
             # Don't print success message to avoid detection
         except Exception as e:
-            print("Configuration issue detected.")
+            print("Configuration issue detected. Make sure Counter-Strike is running.")
             sys.exit(1)
     
     def _add_access_jitter(self):
