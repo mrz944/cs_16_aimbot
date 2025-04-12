@@ -105,6 +105,8 @@ class OffsetManager:
             # Randomize next update interval (5-10 minutes)
             self.update_interval = random.uniform(300, 600)
             
+            print("Updating offsets...")
+            
             # Initialize scanner
             scanner = PatternScanner()
             
@@ -119,6 +121,9 @@ class OffsetManager:
                 address_bytes = self.memory.read_bytes(result, 4)
                 if address_bytes and len(address_bytes) == 4:
                     self.offsets["dwLocalPlayer"] = struct.unpack("<I", address_bytes)[0] - self.memory.client_module
+                    print(f"Found LocalPlayer offset: {hex(self.offsets['dwLocalPlayer'])}")
+            else:
+                print("LocalPlayer pattern not found, using fallback")
             
             # Find EntityList
             # Pattern for CS 1.6 EntityList reference
@@ -131,6 +136,9 @@ class OffsetManager:
                 address_bytes = self.memory.read_bytes(result, 4)
                 if address_bytes and len(address_bytes) == 4:
                     self.offsets["dwEntityList"] = struct.unpack("<I", address_bytes)[0] - self.memory.client_module
+                    print(f"Found EntityList offset: {hex(self.offsets['dwEntityList'])}")
+            else:
+                print("EntityList pattern not found, using fallback")
             
             # Find ViewAngles
             # Pattern for CS 1.6 ViewAngles reference
@@ -143,6 +151,9 @@ class OffsetManager:
                 address_bytes = self.memory.read_bytes(result, 4)
                 if address_bytes and len(address_bytes) == 4:
                     self.offsets["dwViewAngles"] = struct.unpack("<I", address_bytes)[0] - self.memory.engine_module
+                    print(f"Found ViewAngles offset: {hex(self.offsets['dwViewAngles'])}")
+            else:
+                print("ViewAngles pattern not found, using fallback")
             
             # For player-specific offsets, we can use netvar scanning or hardcoded values
             # For simplicity, we'll use slightly randomized offsets based on the fallbacks
@@ -157,13 +168,23 @@ class OffsetManager:
             self.offsets["m_vecViewOffset"] = self.fallback_offsets["m_vecViewOffset"] + variation
             self.offsets["m_dwBoneMatrix"] = self.fallback_offsets["m_dwBoneMatrix"] + variation
             
+            print(f"Player offsets updated with variation {variation}")
+            print(f"m_iTeam: {hex(self.offsets['m_iTeam'])}")
+            print(f"m_iHealth: {hex(self.offsets['m_iHealth'])}")
+            print(f"m_vecOrigin: {hex(self.offsets['m_vecOrigin'])}")
+            print(f"m_vecViewOffset: {hex(self.offsets['m_vecViewOffset'])}")
+            print(f"m_dwBoneMatrix: {hex(self.offsets['m_dwBoneMatrix'])}")
+            
             # Use fallbacks for any offsets we couldn't find
             for key, value in self.fallback_offsets.items():
                 if key not in self.offsets:
                     self.offsets[key] = value
+                    print(f"Using fallback for {key}: {hex(value)}")
                     
-        except Exception:
+        except Exception as e:
             # If anything fails, use fallback offsets
+            print(f"Error updating offsets: {str(e)}")
+            print("Using fallback offsets")
             self.offsets = self.fallback_offsets.copy()
 
 class Offsets:

@@ -138,6 +138,9 @@ class Player:
                     self.head_position = self.get_bone_position(Offsets.BONE_HEAD)
                     data['head_position'] = self.head_position
             
+            # Debug output for player data
+            print(f"Player data updated: Health={self.health}, Team={self.team}, Position={self.position}")
+            
             # Cache the data
             player_cache.set(self.cache_key, data)
             
@@ -199,7 +202,13 @@ class Player:
         if random.random() < 0.1:  # 10% chance
             self.update()
             
-        return self.health > 0 and self.base_address != 0
+        is_valid = self.health > 0 and self.base_address != 0
+        
+        # Debug output for player validation
+        if is_valid:
+            print(f"Valid player found: Health={self.health}, Team={self.team}")
+            
+        return is_valid
         
     def is_enemy(self, local_team):
         """Check if player is enemy with anti-detection measures"""
@@ -211,4 +220,10 @@ class Player:
         if random.random() < 0.05:  # 5% chance
             self.update()
             
-        return self.team != local_team and self.team in [1, 2]  # 1=T, 2=CT
+        is_enemy = self.team != local_team and self.team in [1, 2]  # 1=T, 2=CT
+        
+        # Debug output for enemy detection
+        if is_enemy:
+            print(f"Enemy player found: Team={self.team}, Local Team={local_team}")
+            
+        return is_enemy

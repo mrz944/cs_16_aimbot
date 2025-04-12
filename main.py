@@ -33,7 +33,8 @@ def clear_console():
 
 def print_status(aimbot, fps=0):
     """Print current status with obfuscated terminology"""
-    clear_console()
+    # Don't clear console to preserve debug messages
+    # clear_console()
     
     # Use different header texts randomly
     headers = [
@@ -243,16 +244,22 @@ def main():
                     if current_time >= next_player_scan:
                         # Get local player
                         local_player_addr = memory.read_int(memory.client_module + Offsets.dwLocalPlayer)
+                        print(f"Local player address: {local_player_addr}")
+                        
                         if local_player_addr:
                             local_player = Player(memory, local_player_addr)
+                            print(f"Local player: Health={local_player.health}, Team={local_player.team}")
                             
                             if not local_player.is_valid():
+                                print("Local player is not valid")
                                 # Randomized sleep on invalid player
                                 time.sleep(random.uniform(0.005, 0.015))
                                 
                                 # Set next scan time
                                 next_player_scan = current_time + random.uniform(0.05, 0.15)
                                 continue
+                            else:
+                                print("Local player is valid")
                             
                             # Get players with randomized scanning pattern
                             players = []
@@ -261,16 +268,25 @@ def main():
                             indices = list(range(1, Offsets.MAX_PLAYERS))
                             random.shuffle(indices)
                             
+                            print(f"Scanning for players (max: {Offsets.MAX_PLAYERS})")
+                            
                             # Only scan a random subset of players each time (70-100%)
                             scan_count = int(len(indices) * random.uniform(0.7, 1.0))
+                            print(f"Scanning {scan_count} player slots")
+                            
                             for i in indices[:scan_count]:
                                 entity_addr = memory.read_int(memory.client_module + Offsets.dwEntityList + i * 4)
+                                print(f"Player slot {i}: Address {entity_addr}")
+                                
                                 if entity_addr and entity_addr != local_player_addr:
+                                    print(f"Found player at slot {i}, address {entity_addr}")
                                     players.append(Player(memory, entity_addr))
                                     
                                     # Add small random delay between player scans
                                     if random.random() < 0.1:  # 10% chance
                                         time.sleep(random.uniform(0.0001, 0.0005))
+                            
+                            print(f"Found {len(players)} potential players")
                             
                             # Find and aim at best target
                             target = aimbot.get_best_target(local_player, players)
@@ -280,8 +296,9 @@ def main():
                         # Set next player scan time with jitter
                         next_player_scan = current_time + random.uniform(0.05, 0.15)
                 
-                except Exception:
-                    # Silent failure - don't print errors that could reveal it's an aimbot
+                except Exception as e:
+                    # Print exception for debugging
+                    print(f"Error in main loop: {str(e)}")
                     time.sleep(random.uniform(0.1, 0.3))  # Random delay on error
             
             # Variable sleep to reduce CPU usage and avoid detection
@@ -294,8 +311,9 @@ def main():
         
     except KeyboardInterrupt:
         print("Shutting down...")
-    except Exception:
-        # Silent failure - don't print errors that could reveal it's an aimbot
+    except Exception as e:
+        # Print exception for debugging
+        print(f"Unhandled exception: {str(e)}")
         input("Press Enter to exit...")
 
 def toggle_aimbot(aimbot):

@@ -155,8 +155,14 @@ class Aimbot:
         """Initialize aimbot with necessary addresses"""
         # Set view angles address
         self.view_angles_address = self.memory.engine_module + Offsets.dwViewAngles
+        print(f"View angles address: {hex(self.view_angles_address)}")
+        
         # Initialize offsets dynamically
         Offsets.initialize(self.memory)
+        print(f"Offsets initialized")
+        print(f"Local player offset: {hex(Offsets.dwLocalPlayer)}")
+        print(f"Entity list offset: {hex(Offsets.dwEntityList)}")
+        print(f"View angles offset: {hex(Offsets.dwViewAngles)}")
         
     def get_best_target(self, local_player, players):
         """Find the best target based on FOV and distance with improved detection"""

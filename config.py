@@ -166,10 +166,18 @@ class Config:
                         if hasattr(self, key):
                             setattr(self, key, value)
                     
-                    # Don't print success message to avoid detection
-        except Exception:
-            # Silent failure - don't print errors that could reveal it's an aimbot
-            pass
+                    # Print debug message with loaded settings
+                    print("Config loaded successfully")
+                    print(f"FOV limit: {self.fov_limit}")
+                    print(f"Smoothing: {self.smoothing}")
+                    print(f"Mouse movement: {self.use_mouse_movement}")
+                    print(f"Mouse sensitivity: {self.mouse_sensitivity}")
+                    print(f"Target bone: {self.target_bone}")
+                    print(f"Check visibility: {self.check_visibility}")
+                    print(f"Recoil control: {self.recoil_control}")
+        except Exception as e:
+            # Print error for debugging
+            print(f"Error loading config: {str(e)}")
     
     def save_config(self):
         """Save configuration to file with anti-detection measures"""
@@ -185,6 +193,7 @@ class Config:
             
             # Use obfuscated filename
             filename = self._get_config_filename()
+            print(f"Saving config to file: {filename}")
             
             # Add random delay to simulate file writing
             time.sleep(random.uniform(0.05, 0.2))
@@ -192,10 +201,18 @@ class Config:
             with open(filename, "w") as f:
                 f.write(encrypted_data)
                 
-            # Don't print success message to avoid detection
-        except Exception:
-            # Silent failure - don't print errors that could reveal it's an aimbot
-            pass
+            print("Config saved successfully")
+            print(f"Current settings:")
+            print(f"FOV limit: {self.fov_limit}")
+            print(f"Smoothing: {self.smoothing}")
+            print(f"Mouse movement: {self.use_mouse_movement}")
+            print(f"Mouse sensitivity: {self.mouse_sensitivity}")
+            print(f"Target bone: {self.target_bone}")
+            print(f"Check visibility: {self.check_visibility}")
+            print(f"Recoil control: {self.recoil_control}")
+        except Exception as e:
+            # Print error for debugging
+            print(f"Error saving config: {str(e)}")
     
     def randomize_settings(self):
         """Slightly randomize settings to avoid detection patterns"""

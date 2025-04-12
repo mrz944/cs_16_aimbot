@@ -162,11 +162,15 @@ class MemoryManager:
             client_module_names = ["client.dll", "mp.dll", "cstrike.dll", "valve.dll"]
             self.client_module = None
             
+            print("Searching for client module...")
             for client_name in client_module_names:
                 try:
+                    print(f"Trying client module: {client_name}")
                     self.client_module = module_from_name(self.process.process_handle, client_name).lpBaseOfDll
+                    print(f"Found client module: {client_name} at address {hex(self.client_module)}")
                     break
-                except Exception:
+                except Exception as e:
+                    print(f"Failed to find client module {client_name}: {str(e)}")
                     continue
             
             if not self.client_module:
@@ -180,11 +184,15 @@ class MemoryManager:
             engine_module_names = ["hw.dll", "sw.dll", "engine.dll", "hl.dll"]
             self.engine_module = None
             
+            print("Searching for engine module...")
             for engine_name in engine_module_names:
                 try:
+                    print(f"Trying engine module: {engine_name}")
                     self.engine_module = module_from_name(self.process.process_handle, engine_name).lpBaseOfDll
+                    print(f"Found engine module: {engine_name} at address {hex(self.engine_module)}")
                     break
-                except Exception:
+                except Exception as e:
+                    print(f"Failed to find engine module {engine_name}: {str(e)}")
                     continue
             
             if not self.engine_module:
